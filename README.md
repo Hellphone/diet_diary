@@ -3,10 +3,10 @@
 A simple app for keeping track of your calories and macros.
 
 TODO:
-* Ordering (calculate the order of inserted entries)
+* ~~Ordering (calculate the order of inserted entries)~~
 * Authentication and authorization
 * Data Validation
-* Logging
+* Logging with logrus
 * Error variables
 * Descriptive error responses
 * Creating and copying EntrySets
