@@ -1,15 +1,19 @@
+#Diet Diary#
+
 A simple app for keeping track of your calories and macros.
 
 TODO:
-* git
+* Ordering (calculate the order of inserted entries)
 * Authentication and authorization
 * Data Validation
-* Ordering
+* Logging
 * Error variables
-* Understandable error responses
+* Descriptive error responses
 * Creating and copying EntrySets
 * Interfaces
+* Build all SQL queries with Squirrel (?)
 * Migrations (probably with Liquibase)
+* Docker
 * Caching with Redis
 * Unit tests
 * Kafka integration if applicable (?)
