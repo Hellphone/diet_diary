@@ -18,6 +18,7 @@ func SetupRoutes(r *gin.Engine) {
 
 	r.GET("/entry", getEntries)
 	r.GET("/entry/:id", getEntryById)
+	r.POST("/entry/total", getEntryTotalByDate)
 	r.POST("/entry/grid", entryGrid)
 	r.POST("/entry", insertEntry)
 	r.PUT("/entry/:id", updateEntry)

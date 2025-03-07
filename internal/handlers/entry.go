@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -44,6 +45,29 @@ func getEntryById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"entry": entry})
+}
+
+func getEntryTotalByDate(c *gin.Context) {
+	var reqBody struct {
+		Date *time.Time `json:"date"`
+	}
+
+	if err := c.ShouldBindJSON(&reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	entryTotal, err := services.GetEntryTotalByDate(reqBody.Date)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"total": entryTotal})
 }
 
 func entryGrid(c *gin.Context) {

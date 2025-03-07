@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"diet_diary/internal/database"
 	"diet_diary/internal/domain"
@@ -51,7 +52,7 @@ func GetEntries(filter *database.Filter) (domain.EntrySet, error) {
 	query, args, err := builder.ToSql()
 	if err != nil {
 		log.Println("Error building SQL query:", err)
-		return nil, err
+		return nil, fmt.Errorf("ToSql: %v", err)
 	}
 
 	err = database.DB.Select(&entrySet, rebind(query), args...)
@@ -97,7 +98,7 @@ func InsertEntrySet(es domain.EntrySet) error {
 		return err
 	}
 
-	return  nil
+	return nil
 }
 
 func UpdateEntry(entry *domain.Entry) (int64, error) {
@@ -126,4 +127,17 @@ func DeleteEntry(id int64) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func GetMaxEntryOrderByDate(date *time.Time) (int, error) {
+	query := `SELECT COALESCE(MAX(entry_order), 0) FROM entries
+			  WHERE DATE(created_at) = DATE($1)`
+	var maxOrder int
+	err := database.DB.Get(&maxOrder, query, date)
+	if err != nil {
+		log.Println("Error getting max entry_order:", err)
+		return 0, err
+	}
+
+	return maxOrder, nil
 }

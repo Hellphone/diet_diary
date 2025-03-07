@@ -52,25 +52,60 @@ func (e *Entry) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (e *Entry) CalcProtein() float32 {
+	if e == nil || e.Product == nil || e.Product.Macro == nil {
+		return 0
+	}
+
+	return e.Product.Macro.Protein * float32(e.Quantity) / 100
+}
+
+func (e *Entry) CalcFat() float32 {
+	if e == nil || e.Product == nil || e.Product.Macro == nil {
+		return 0
+	}
+
+	return e.Product.Macro.Fat * float32(e.Quantity) / 100
+}
+
+func (e *Entry) CalcCarbohydrate() float32 {
+	if e == nil || e.Product == nil || e.Product.Macro == nil {
+		return 0
+	}
+
+	return e.Product.Macro.Carbohydrate * float32(e.Quantity) / 100
+}
+
 func (e *Entry) CalcCalories() float32 {
-	if e == nil {
+	if e == nil || e.Product == nil || e.Product.Macro == nil {
 		return 0
 	}
 
 	return float32(e.Quantity) * (e.Product.Macro.Protein*CaloriesInProtein +
-		e.Product.Macro.Fat*CaloriesInFat + e.Product.Macro.Carbohydrate*CaloriesInCarb)
+		e.Product.Macro.Fat*CaloriesInFat + e.Product.Macro.Carbohydrate*CaloriesInCarb) / 100
 }
 
 type EntrySet []*Entry
 
-func (es EntrySet) Total() *Macro {
-	macro := &Macro{}
-	for _, e := range es {
-		macro.Protein += e.Product.Macro.Protein
-		macro.Fat += e.Product.Macro.Fat
-		macro.Carbohydrate += e.Product.Macro.Carbohydrate
-		macro.Calories += e.CalcCalories()
+type EntryTotal struct {
+	*Macro
+	Date *time.Time `json:"date"`
+}
+
+func (es EntrySet) Total() *EntryTotal {
+	if es == nil {
+		return nil
 	}
 
-	return macro
+	entryTotal := &EntryTotal{&Macro{}, &time.Time{}}
+	for _, e := range es {
+		entryTotal.Protein += e.CalcProtein()
+		entryTotal.Fat += e.CalcFat()
+		entryTotal.Carbohydrate += e.CalcCarbohydrate()
+		entryTotal.Calories += e.CalcCalories()
+	}
+
+	entryTotal.Date = es[0].CreatedAt
+
+	return entryTotal
 }

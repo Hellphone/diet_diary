@@ -1,10 +1,12 @@
 package services
 
 import (
+	"database/sql"
+	"fmt"
 	"time"
 
-	"diet_diary/internal/domain"
 	"diet_diary/internal/database"
+	"diet_diary/internal/domain"
 	"diet_diary/internal/repositories"
 )
 
@@ -16,13 +18,40 @@ func GetEntryById(id int64) (*domain.Entry, error) {
 	return repositories.GetEntryById(id)
 }
 
+func GetEntryTotalByDate(date *time.Time) (*domain.EntryTotal, error) {
+	filter := &database.Filter{
+		Filters: []database.SQLFilter{
+			{Op: "gt", Field: "created_at", Value: date.Format(time.DateOnly)},
+			{Op: "lt", Field: "created_at", Value: date.Add(24*time.Hour).Format(time.DateOnly)},
+		},
+	}
+
+	entrySet, err := repositories.GetEntries(filter)
+	if err != nil {
+		return nil, fmt.Errorf("repositories.GetEntries: %v", err)
+	}
+
+	if len(entrySet) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return entrySet.Total(), nil
+}
+
 func InsertEntry(entry *domain.Entry) (int64, error) {
 	if entry.CreatedAt == nil || entry.CreatedAt.IsZero() {
 		now := time.Now()
 		entry.CreatedAt = &now
 	}
 
-	// TODO: if entry_order is not defined, set it to max(entry_order) of the chosen day + 1
+	if entry.Order == 0 {
+		maxOrder, err := repositories.GetMaxEntryOrderByDate(entry.CreatedAt)
+		if err != nil && err != sql.ErrNoRows {
+			return 0, err
+		}
+
+		entry.Order = maxOrder + 1
+	}
 
 	return repositories.InsertEntry(database.DomainToEntry(entry))
 }

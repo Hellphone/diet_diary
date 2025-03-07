@@ -19,7 +19,7 @@ import (
 func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to load config: %v", err)
 		return
 	}
 
